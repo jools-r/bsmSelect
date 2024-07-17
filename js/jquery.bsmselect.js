@@ -17,7 +17,6 @@
   {
     this.$original = $(target);             // the original select multiple
     this.buildingSelect = false;            // is the new select being constructed right now?
-    this.ieClick = false;                   // in IE, has a click event occurred? ignore if not
     this.ignoreOriginalChangeEvent = false; // originalChangeEvent bypassed when this is true
     this.options = options;
     this.buildDom();
@@ -82,26 +81,21 @@
 
     /**
      * Triggered when an item has been selected
-     * Check to make sure it's not an IE screwup, and add it to the list
+     * Add item to the list
      */
     selectChangeEvent: function() {
-      if ($.browser && $.browser.msie && $.browser.version < 7 && !this.ieClick) { return; }
       var bsmOpt = $('option:selected:eq(0)', this.$select);
       if (bsmOpt.data('orig-option')) {
         if (this.triggerOriginalChange(bsmOpt.data('orig-option'), 'add') == false) {
           this.addListItem(bsmOpt);
         }
       }
-      this.ieClick = false;
     },
 
     /**
-     * IE6 lets you scroll around in a select without it being pulled down
-     * making sure a click preceded the change() event reduces the chance
-     * if unintended items being added. there may be a better solution?
+     * Triggered when an item has been clicked
      */
     selectClickEvent: function() {
-      this.ieClick = true;
     },
 
     /**
@@ -113,9 +107,6 @@
         this.ignoreOriginalChangeEvent = false;
       } else {
         this.buildSelect();
-        // opera has an issue where it needs a force redraw, otherwise
-        // the items won't appear until something else forces a redraw
-        if ($.browser && $.browser.opera) { this.$list.hide().show(); }
       }
     },
 
@@ -198,7 +189,6 @@
         .removeAttr('selected')
         .attr('disabled', 'disabled')
         .toggle(!this.options.hideWhenAdded);
-      if ($.browser && $.browser.msie && $.browser.version < 8) { this.$select.hide().show(); } // this forces IE to update display
     },
 
     /**
@@ -210,7 +200,6 @@
       $bsmOpt.removeClass(this.options.optionDisabledClass)
         .removeAttr('disabled')
         .toggle(!this.options.hideWhenAdded);
-      if ($.browser && $.browser.msie && $.browser.version < 8) { this.$select.hide().show(); } // this forces IE to update display
     },
 
     /**
